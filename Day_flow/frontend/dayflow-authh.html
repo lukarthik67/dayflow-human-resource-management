@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dayflow · HR Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a12;
+    --bg-2:#0d0d18;
+    --panel-border: rgba(255,255,255,0.07);
+    --card:#12121e;
+    --card-2:#15152277;
+    --input-bg:#191926;
+    --input-border:#26263a;
+    --input-border-focus:#7c6df2;
+    --text:#eceaf7;
+    --text-dim:#9694ab;
+    --text-faint:#6b6980;
+    --purple:#7c6df2;
+    --purple-2:#9d5cf0;
+    --grad: linear-gradient(135deg,#6a5cf5 0%,#9d5cf0 100%);
+    --error:#f26565;
+    --error-bg:rgba(242,101,101,0.08);
+    --success:#3ddc97;
+    --radius-lg:20px;
+    --radius-md:12px;
+    --radius-sm:8px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% 20%, rgba(124,109,242,0.08), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 80%, rgba(157,92,240,0.07), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .stars{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 30% 65%, rgba(255,255,255,0.25), transparent),
+      radial-gradient(1.5px 1.5px at 70% 25%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,0.25), transparent),
+      radial-gradient(1px 1px at 50% 85%, rgba(255,255,255,0.2), transparent),
+      radial-gradient(1.5px 1.5px at 92% 12%, rgba(255,255,255,0.3), transparent);
+    background-size: 100% 100%;
+  }
+
+  /* ===== AUTH SHELL ===== */
+  #auth-view{
+    position:relative; z-index:1;
+    display:grid; grid-template-columns: 1.05fr 1fr;
+    min-height:100vh;
+  }
+  .left-panel{
+    padding: 56px 64px;
+    display:flex; flex-direction:column; justify-content:center;
+    gap:44px;
+    max-width:640px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.5px;
+  }
+  .logo-mark{
+    width:34px; height:34px; border-radius:9px;
+    background:var(--grad);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:800; font-size:18px; color:white;
+    box-shadow:0 4px 18px rgba(124,109,242,0.45);
+  }
+  .hero h1{
+    font-family:'Sora',sans-serif;
+    font-size:42px; line-height:1.15; font-weight:700; letter-spacing:-0.5px;
+    margin-bottom:18px;
+  }
+  .hero h1 .grad{
+    background:var(--grad);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p{ color:var(--text-dim); font-size:15.5px; line-height:1.65; max-width:420px;}
+
+  .illustration{ position:relative; width:100%; max-width:430px; }
+  .illustration svg{ width:100%; height:auto; display:block; filter:drop-shadow(0 20px 60px rgba(124,109,242,0.18)); }
+  .float-dot{ position:absolute; border-radius:50%; background:var(--grad); opacity:0.5; filter:blur(1px); animation:float 6s ease-in-out infinite; }
+  @keyframes float{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+  .right-panel{
+    display:flex; align-items:center; justify-content:center;
+    padding:40px;
+  }
+  .card{
+    width:100%; max-width:430px;
+    background:linear-gradient(180deg, var(--card), #101019);
+    border:1px solid var(--panel-border);
+    border-radius:var(--radius-lg);
+    padding:38px 36px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.45);
+  }
+  .card.hidden{display:none;}
+  .card h2{ font-family:'Sora',sans-serif; font-size:24px; font-weight:700; margin-bottom:6px;}
+  .card .sub{ color:var(--text-dim); font-size:14px; margin-bottom:26px;}
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:13px; font-weight:600; color:var(--text); margin-bottom:7px; }
+  .field .hint{ font-size:11.5px; color:var(--text-faint); font-weight:400; margin-left:6px;}
+  .input-wrap{ position:relative; display:flex; align-items:center; }
+  .input-wrap .icon{ position:absolute; left:13px; width:16px; height:16px; color:var(--text-faint); pointer-events:none; }
+  .input-wrap input, .input-wrap select{
+    width:100%;
+    background:var(--input-bg);
+    border:1px solid var(--input-border);
+    border-radius:var(--radius-sm);
+    padding:11.5px 14px 11.5px 38px;
+    color:var(--text);
+    font-size:14px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .input-wrap input::placeholder{ color:var(--text-faint); }
+  .input-wrap input:focus, .input-wrap select:focus{
+    border-color:var(--input-border-focus);
+    box-shadow:0 0 0 3px rgba(124,109,242,0.15);
+  }
+  .input-wrap.no-icon input{ padding-left:14px; }
+  .input-wrap .eye-btn{
+    position:absolute; right:12px; background:none; border:none; cursor:pointer;
+    color:var(--text-faint); width:18px; height:18px; padding:0; display:flex; align-items:center;
+  }
+  .input-wrap .eye-btn:hover{ color:var(--text-dim); }
+  .field.error .input-wrap input{ border-color:var(--error); background:var(--error-bg); }
+  .error-msg{ display:flex; align-items:center; gap:6px; color:var(--error); font-size:12.5px; margin-top:7px; font-weight:500; }
+
+  .row-between{ display:flex; align-items:center; justify-content:space-between; margin:18px 0 22px; }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-dim); }
+  .checkbox-row input{ accent-color:var(--purple); width:15px; height:15px; cursor:pointer; }
+  a.link{ color:var(--purple); font-size:13.5px; text-decoration:none; font-weight:500; }
+  a.link:hover{ text-decoration:underline; }
+
+  .btn{
+    width:100%; padding:13px; border:none; border-radius:var(--radius-sm);
+    font-family:inherit; font-size:14.5px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:active{ transform:scale(0.99); }
+  .btn-primary{ background:var(--grad); color:white; box-shadow:0 10px 30px rgba(124,109,242,0.35); }
+  .btn-primary:hover{ opacity:0.92; }
+  .btn-primary:disabled{ opacity:0.75; cursor:default; }
+  .btn-secondary{ background:var(--input-bg); border:1px solid var(--input-border); color:var(--text); }
+  .btn-secondary:hover{ background:#1e1e2e; }
+  .btn-ghost{ background:transparent; color:var(--purple); border:1px solid var(--input-border); }
+
+  .divider{ display:flex; align-items:center; gap:14px; margin:20px 0; color:var(--text-faint); font-size:12.5px; }
+  .divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--input-border); }
+
+  .foot-note{ text-align:center; margin-top:22px; font-size:13.5px; color:var(--text-dim); }
+  .foot-note a{ color:var(--purple); text-decoration:none; font-weight:600; }
+  .foot-note a:hover{ text-decoration:underline; }
+
+  .spinner{ width:15px; height:15px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .banner{
+    display:flex; gap:10px; align-items:flex-start;
+    background:rgba(124,109,242,0.08); border:1px solid rgba(124,109,242,0.25);
+    border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:22px;
+    font-size:12.5px; color:#c9c4f5; line-height:1.5;
+  }
+  .banner svg{ width:16px; height:16px; flex-shrink:0; margin-top:1px; color:var(--purple-2); }
+
+  .section-label{ font-size:12px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); margin:22px 0 12px; }
+  .section-label:first-of-type{ margin-top:0; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .logo-upload{
+    border:1.5px dashed var(--input-border); border-radius:var(--radius-sm);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px; padding:16px 8px; cursor:pointer; color:var(--text-faint); font-size:11px; text-align:center;
+    height:100%; min-height:76px; transition:border-color .15s;
+  }
+  .logo-upload:hover{ border-color:var(--purple); color:var(--text-dim); }
+  .logo-upload svg{ width:18px; height:18px; }
+  .logo-upload input{ display:none; }
+
+  .phone-row{ display:grid; grid-template-columns:88px 1fr; gap:8px; }
+
+  .pw-rules{ display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; margin:10px 0 4px; }
+  .pw-rule{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-faint); transition:color .15s; }
+  .pw-rule svg{ width:13px; height:13px; flex-shrink:0; }
+  .pw-rule.met{ color:var(--success); }
+  .pw-rule.met svg{ color:var(--success); }
+  .pw-rule .circle{ width:13px; height:13px; border-radius:50%; border:1.5px solid var(--text-faint); flex-shrink:0; }
+  .pw-rule.met .circle{ display:none; }
+  .pw-rule .check{ display:none; }
+  .pw-rule.met .check{ display:block; }
+
+  .id-preview{
+    background:var(--input-bg); border:1px solid var(--input-border); border-radius:var(--radius-sm);
+    padding:11px 14px; font-family:'Sora',sans-serif; font-size:14px; font-weight:600; letter-spacing:1px;
+    color:var(--purple-2); margin-top:6px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .id-preview .placeholder{ color:var(--text-faint); font-weight:400; letter-spacing:normal; font-family:'Inter',sans-serif; font-size:12.5px; }
+
+  /* success screens */
+  .success-icon{
+    width:60px; height:60px; border-radius:50%;
+    background:linear-gradient(135deg,#3ddc97,#2bb885);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 20px; box-shadow:0 10px 30px rgba(61,220,151,0.3);
+  }
+  .success-icon svg{ width:26px; height:26px; color:white; }
+  .center-text{ text-align:center; }
+  .cred-box{
+    background:var(--input-bg); border:1px solid var(--input-border); border-radius:var(--radius-md);
+    padding:16px; margin:20px 0; text-align:left;
+  }
+  .cred-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--input-border); }
+  .cred-row:last-child{ border-bottom:none; }
+  .cred-label{ font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.5px; }
+  .cred-value{ font-family:'Sora',sans-serif; font-weight:700; font-size:14.5px; color:var(--text); letter-spacing:0.5px; }
+  .copy-btn{
+    background:none; border:1px solid var(--input-border); color:var(--text-dim); border-radius:6px;
+    padding:4px 9px; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:4px;
+  }
+  .copy-btn:hover{ border-color:var(--purple); color:var(--purple); }
+  .copy-btn svg{ width:11px; height:11px; }
+
+  /* ===== APP VIEW (post-login) ===== */
+  #app-view{ display:none; min-height:100vh; align-items:center; justify-content:center; position:relative; z-index:1; padding:24px; }
+  .app-card{ width:100%; max-width:460px; }
+
+  .demo-hint{
+    margin-top:18px; font-size:11.5px; color:var(--text-faint); text-align:center;
+    border-top:1px dashed var(--input-border); padding-top:14px; line-height:1.6;
+  }
+  .demo-hint b{ color:var(--text-dim); }
+
+  @media (max-width:920px){
+    #auth-view{ grid-template-columns:1fr; }
+    .left-panel{ display:none; }
+    .right-panel{ padding:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<!-- ============ AUTH VIEW ============ -->
+<div id="auth-view">
+  <div class="left-panel">
+    <div class="logo"><span class="logo-mark">D</span>DAYFLOW</div>
+    <div class="hero">
+      <h1>Every workday,<br><span class="grad">perfectly aligned.</span></h1>
+      <p>Dayflow is your all-in-one HR management system designed to simplify workforce operations and empower teams.</p>
+    </div>
+    <div class="illustration">
+      <svg viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="18" width="404" height="224" rx="18" fill="#14141f" stroke="#26263a"/>
+        <circle cx="100" cy="130" r="52" fill="none" stroke="#26263a" stroke-width="14"/>
+        <path d="M100 78 A52 52 0 0 1 148 145" fill="none" stroke="#7c6df2" stroke-width="14" stroke-linecap="round"/>
+        <path d="M148 145 A52 52 0 0 1 92 181" fill="none" stroke="#9d5cf0" stroke-width="14" stroke-linecap="round"/>
+        <circle cx="330" cy="55" r="20" fill="#26263a"/>
+        <circle cx="330" cy="49" r="8" fill="#4a4a68"/>
+        <path d="M312 70 q18 -14 36 0" stroke="#4a4a68" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="230" y="150" width="18" height="60" rx="3" fill="#26263a"/>
+        <rect x="258" y="120" width="18" height="90" rx="3" fill="#7c6df2"/>
+        <rect x="286" y="165" width="18" height="45" rx="3" fill="#26263a"/>
+        <rect x="314" y="100" width="18" height="110" rx="3" fill="#9d5cf0"/>
+        <rect x="342" y="140" width="18" height="70" rx="3" fill="#26263a"/>
+        <line x1="30" y1="222" x2="390" y2="222" stroke="#26263a" stroke-width="2"/>
+      </svg>
+      <div class="float-dot" style="width:10px;height:10px; top:8%; left:78%;"></div>
+      <div class="float-dot" style="width:6px;height:6px; top:70%; left:6%; animation-delay:1.5s;"></div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+
+    <!-- ---- SIGN IN CARD (Image 1 / Image 4 states) ---- -->
+    <div class="card" id="card-signin">
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in to your Dayflow account</p>
+
+      <form id="form-signin" novalidate>
+        <div class="field" id="f-login-id">
+          <label for="in-login-id">Login ID or Email</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="in-login-id" placeholder="Enter your login ID or email" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="field" id="f-password">
+          <label for="in-password">Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="in-password" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="eye-btn" onclick="togglePw('in-password', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="error-msg" id="signin-error" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22L12 2Zm0 15a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6Zm-1-8h2v6h-2v-6Z"/></svg>
+            Invalid login ID or password. Please try again.
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="checkbox-row"><input type="checkbox" checked> Remember me</label>
+          <a class="link" href="#" onclick="showCard('card-forgot'); return false;">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-signin">
+          <span id="signin-btn-label">Sign In</span>
+        </button>
+
+        <div class="divider">or</div>
+
+        <button type="button" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5Z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.4 0-13.8 4.1-17.1 10.1-.2.2-.4.4-.6.6Z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.6 35.3 26.9 36 24 36c-5.3 0-9.7-3.1-11.3-7.6l-6.6 5.1C9.1 39.9 16 44 24 44Z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.6 5.4C41.5 35.9 44 30.4 44 24c0-1.3-.1-2.7-.4-3.5Z"/></svg>
+          Sign in with Google
+        </button>
+      </form>
+
+      <p class="foot-note">Don't have an account? <a href="#" onclick="showCard('card-signup'); return false;">Sign up</a></p>
+
+      <div class="demo-hint">Demo employee — <b>Login ID:</b> OIKADO20230001 &nbsp;·&nbsp; <b>Password:</b> Karthik@123</div>
+    </div>
+
+    <!-- ---- SIGN UP / ADD EMPLOYEE CARD (Image 2, adapted) ---- -->
+    <div class="card hidden" id="card-signup" style="max-width:460px;">
+      <h2>Create Employee Account</h2>
+      <p class="sub">Add a new employee to Dayflow</p>
+
+      <div class="banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Employee accounts can only be created by an HR Officer or Admin. The Login ID and a temporary password are generated automatically — no need to set one.
+      </div>
+
+      <form id="form-signup" novalidate>
+        <div class="section-label">Company Information</div>
+        <div class="two-col">
+          <div class="field" style="grid-column:1/2;">
+            <label>Company Name</label>
+            <div class="input-wrap no-icon">
+              <input type="text" id="in-company" value="Odoo India" readonly style="opacity:0.7; cursor:not-allowed;">
+            </div>
+          </div>
+          <div class="field">
+            <label>Company Logo <span class="hint">(optional)</span></label>
+            <label class="logo-upload">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+              <span id="logo-label">Upload logo</span>
+              <input type="file" accept="image/png,image/jpeg" onchange="document.getElementById('logo-label').textContent=this.files[0]?this.files[0].name:'Upload logo'">
+            </label>
+          </div>
+        </div>
+
+        <div class="section-label">Personal Information</div>
+        <div class="field" id="f-fullname">
+          <label for="in-fullname">Full Name</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="in-fullname" placeholder="Enter employee's full name" autocomplete="off">
+          </div>
+          <div class="error-msg" id="err-fullname" style="display:none;"></div>
+        </div>
+        <div class="field" id="f-email">
+          <label for="in-email">Email Address</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+            <input type="email" id="in-email" placeholder="Enter employee's email" autocomplete="off">
+          </div>
+          <div class="error-msg" id="err-email" style="display:none;"></div>
+        </div>
+        <div class="two-col">
+          <div class="field" id="f-phone">
+            <label for="in-phone">Phone Number</label>
+            <div class="phone-row">
+              <div class="input-wrap no-icon"><select id="in-cc"><option>🇮🇳 +91</option><option>🇺🇸 +1</option><option>🇬🇧 +44</option></select></div>
+              <div class="input-wrap no-icon"><input type="tel" id="in-phone" placeholder="Phone number" inputmode="numeric"></div>
+            </div>
+            <div class="error-msg" id="err-phone" style="display:none;"></div>
+          </div>
+          <div class="field" id="f-doj">
+            <label for="in-doj">Date of Joining</label>
+            <div class="input-wrap no-icon">
+              <input type="date" id="in-doj">
+            </div>
+            <div class="error-msg" id="err-doj" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="section-label">Account Credentials</div>
+        <div class="field" style="margin-bottom:8px;">
+          <label>Login ID <span class="hint">auto-generated</span></label>
+          <div class="id-preview" id="id-preview"><span class="placeholder">Fill in name &amp; date of joining to preview</span></div>
+        </div>
+        <p style="font-size:11.5px; color:var(--text-faint); margin-bottom:18px; line-height:1.5;">A secure temporary password will be generated automatically and shown after account creation. The employee can sign in and change it right away.</p>
+
+        <label class="checkbox-row" style="margin-bottom:8px;">
+          <input type="checkbox" id="in-agree" checked>
+          I confirm the details above are accurate and I agree to the <a class="link" href="#" onclick="return false;">Terms of Service</a> and <a class="link" href="#" onclick="return false;">Privacy Policy</a>.
+        </label>
+        <div class="error-msg" id="err-agree" style="display:none; margin-bottom:12px;"></div>
+
+        <button type="submit" class="btn btn-primary" id="btn-signup">
+          <span id="signup-btn-label">Create Employee Account</span>
+        </button>
+      </form>
+
+      <p class="foot-note">Already have an account? <a href="#" onclick="showCard('card-signin'); return false;">Sign in</a></p>
+    </div>
+
+    <!-- ---- SIGNUP SUCCESS ---- -->
+    <div class="card hidden center-text" id="card-signup-success">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h2>Employee account created</h2>
+      <p class="sub">Share these credentials securely with the employee. They'll be asked to set a new password on first sign-in.</p>
+      <div class="cred-box">
+        <div class="cred-row">
+          <span class="cred-label">Login ID</span>
+          <span style="display:flex; align-items:center; gap:8px;"><span class="cred-value" id="out-login-id">—</span>
+            <button class="copy-btn" onclick="copyText('out-login-id')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button>
+          </span>
+        </div>
+        <div class="cred-row">
+          <span class="cred-label">Temporary Password</span>
+          <span style="display:flex; align-items:center; gap:8px;"><span class="cred-value" id="out-temp-pw">—</span>
+            <button class="copy-btn" onclick="copyText('out-temp-pw')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy</button>
+          </span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="resetSignupForm(); showCard('card-signin');">Back to Sign In</button>
+    </div>
+
+    <!-- ---- FORGOT PASSWORD (Image 3, left state) ---- -->
+    <div class="card hidden" id="card-forgot">
+      <h2>Forgot Password</h2>
+      <p class="sub">No worries! Enter your login ID or email and we'll send you reset instructions.</p>
+      <form id="form-forgot" novalidate>
+        <div class="field" id="f-forgot-id">
+          <label for="in-forgot-id">Login ID or Email</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+            <input type="text" id="in-forgot-id" placeholder="Enter your login ID or email" autocomplete="off">
+          </div>
+          <div class="error-msg" id="err-forgot-id" style="display:none;"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-forgot">
+          <span id="forgot-btn-label">Send Reset Link</span>
+        </button>
+      </form>
+      <p class="foot-note"><a href="#" onclick="showCard('card-signin'); return false;">← Back to Sign In</a></p>
+    </div>
+
+    <!-- ---- FORGOT PASSWORD SENT (Image 3, right state) ---- -->
+    <div class="card hidden center-text" id="card-forgot-sent">
+      <div class="success-icon" style="background:var(--grad); box-shadow:0 10px 30px rgba(124,109,242,0.35);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg>
+      </div>
+      <h2>Reset link sent!</h2>
+      <p class="sub">We've sent password reset instructions to<br><strong id="sent-to-email" style="color:var(--text);">—</strong><br>Please check your inbox and follow the instructions.</p>
+      <button class="btn btn-primary" onclick="showCard('card-signin')">Back to Sign In</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ APP VIEW (post sign-in) ============ -->
+<div id="app-view">
+  <div class="app-card">
+
+    <!-- Forced change password on first login -->
+    <div class="card" id="card-change-pw">
+      <h2>Set a new password</h2>
+      <p class="sub">This is your first sign-in. Choose a new password to secure your account.</p>
+      <form id="form-change-pw" novalidate>
+        <div class="field">
+          <label for="in-new-pw">New Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="in-new-pw" placeholder="Create a new password" oninput="checkPwRules()">
+            <button type="button" class="eye-btn" onclick="togglePw('in-new-pw', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-rules">
+            <div class="pw-rule" id="rule-len"><span class="circle"></span><svg class="check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>At least 8 characters</div>
+            <div class="pw-rule" id="rule-upper"><span class="circle"></span><svg class="check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>One uppercase letter</div>
+            <div class="pw-rule" id="rule-lower"><span class="circle"></span><svg class="check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>One lowercase letter</div>
+            <div class="pw-rule" id="rule-num"><span class="circle"></span><svg class="check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>One number</div>
+            <div class="pw-rule" id="rule-special"><span class="circle"></span><svg class="check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>One special character</div>
+          </div>
+        </div>
+        <div class="field" id="f-confirm-pw">
+          <label for="in-confirm-pw">Confirm New Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="in-confirm-pw" placeholder="Re-enter your new password">
+            <button type="button" class="eye-btn" onclick="togglePw('in-confirm-pw', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="error-msg" id="pw-match-error" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22L12 2Zm0 15a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6Zm-1-8h2v6h-2v-6Z"/></svg>
+            Passwords don't match.
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-change-pw">Update Password &amp; Continue</button>
+      </form>
+    </div>
+
+    <!-- Dashboard placeholder -->
+    <div class="card hidden center-text" id="card-dashboard">
+      <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h2 id="dash-welcome">Welcome back!</h2>
+      <p class="sub">You're signed in to Dayflow. This is a placeholder home screen.</p>
+      <button class="btn btn-secondary" onclick="signOut()">Sign out</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---------- state ----------
+  // In-memory "database" of accounts. Nothing persists across a page reload —
+  // this is a front-end demo, not a real backend — but within a session,
+  // sign-up, sign-in, forgot-password and first-login flows are all wired
+  // together against this shared list.
+  const serialCounters = { "2023": 1 }; // demo employee OIKADO20230001 already seeded
+  const accounts = [
+    {
+      loginId: "OIKADO20230001",
+      email: "karthik.doe@company.com",
+      phone: "9876543210",
+      fullName: "Karthik Doe",
+      password: "Karthik@123",
+      firstLogin: false
+    }
+  ];
+  let currentAccount = null; // account mid-sign-in (used by the change-password step)
+
+  // ---------- navigation ----------
+  function showCard(id){
+    document.querySelectorAll('#auth-view .card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function showApp(cardId, welcomeName){
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('app-view').style.display = 'flex';
+    document.querySelectorAll('#app-view .card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(cardId).classList.remove('hidden');
+    if(welcomeName) document.getElementById('dash-welcome').textContent = 'Welcome back, ' + welcomeName + '!';
+  }
+  function signOut(){
+    currentAccount = null;
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('auth-view').style.display = 'grid';
+    document.getElementById('form-signin').reset();
+    showCard('card-signin');
+  }
+
+  function togglePw(id, btn){
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.style.color = input.type === 'text' ? 'var(--purple)' : 'var(--text-faint)';
+  }
+
+  function copyText(id){
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).catch(()=>{});
+  }
+
+  // ---------- field-level error helpers ----------
+  function setFieldError(fieldId, errId, message){
+    const field = document.getElementById(fieldId);
+    const err = document.getElementById(errId);
+    if(field) field.classList.add('error');
+    if(err){
+      err.textContent = message;
+      err.style.display = 'flex';
+    }
+  }
+  function clearFieldError(fieldId, errId){
+    const field = document.getElementById(fieldId);
+    const err = document.getElementById(errId);
+    if(field) field.classList.remove('error');
+    if(err) err.style.display = 'none';
+  }
+  function clearErrors(pairs){
+    pairs.forEach(([fieldId, errId]) => clearFieldError(fieldId, errId));
+  }
+
+  // ---------- lookups ----------
+  function findAccount(identifier){
+    const val = identifier.trim().toLowerCase();
+    return accounts.find(a => a.loginId.toLowerCase() === val || a.email.toLowerCase() === val) || null;
+  }
+  function emailInUse(email){
+    return accounts.some(a => a.email.toLowerCase() === email.trim().toLowerCase());
+  }
+
+  // ---------- Login ID generation ----------
+  // Format: OI + first2(firstName) + first2(lastName) + YYYY + 4-digit serial
+  // Guaranteed unique against every existing account, even across page reloads
+  // within the same session's serial counters.
+  function generateLoginId(fullName, isoDate){
+    const parts = fullName.trim().split(/\s+/);
+    const first = (parts[0] || '').padEnd(2,'x').slice(0,2).toUpperCase();
+    const last = (parts.length > 1 ? parts[parts.length-1] : parts[0] || '').padEnd(2,'x').slice(0,2).toUpperCase();
+    const year = isoDate ? isoDate.slice(0,4) : String(new Date().getFullYear());
+    if(!serialCounters[year]) serialCounters[year] = 0;
+    let nextSerial = serialCounters[year] + 1;
+    let id = 'OI' + first + last + year + String(nextSerial).padStart(4,'0');
+    while(accounts.some(a => a.loginId === id)){
+      nextSerial += 1;
+      id = 'OI' + first + last + year + String(nextSerial).padStart(4,'0');
+    }
+    return { id, year, serial: nextSerial };
+  }
+  function commitSerial(year, serial){ serialCounters[year] = Math.max(serialCounters[year] || 0, serial); }
+
+  function generatePassword(){
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lower = 'abcdefghijkmnpqrstuvwxyz';
+    const nums = '23456789';
+    const special = '!@#$%&*';
+    const pick = s => s[Math.floor(Math.random()*s.length)];
+    let pw = pick(upper) + pick(lower) + pick(nums) + pick(special);
+    const all = upper+lower+nums+special;
+    for(let i=0;i<6;i++) pw += pick(all);
+    return pw.split('').sort(()=>Math.random()-0.5).join('');
+  }
+
+  // live Login ID preview on signup form
+  function updateIdPreview(){
+    const name = document.getElementById('in-fullname').value;
+    const doj = document.getElementById('in-doj').value;
+    const el = document.getElementById('id-preview');
+    if(name.trim().length >= 2 && doj){
+      const { id } = generateLoginId(name, doj);
+      el.innerHTML = id;
+    } else {
+      el.innerHTML = '<span class="placeholder">Fill in name &amp; date of joining to preview</span>';
+    }
+  }
+  document.getElementById('in-fullname').addEventListener('input', updateIdPreview);
+  document.getElementById('in-doj').addEventListener('input', updateIdPreview);
+
+  // clear an inline error as soon as the user edits that field again
+  [
+    ['in-fullname','f-fullname','err-fullname'],
+    ['in-email','f-email','err-email'],
+    ['in-phone','f-phone','err-phone'],
+    ['in-doj','f-doj','err-doj'],
+  ].forEach(([inputId, fieldId, errId]) => {
+    document.getElementById(inputId).addEventListener('input', () => clearFieldError(fieldId, errId));
+  });
+  document.getElementById('in-agree').addEventListener('change', () => clearFieldError(null, 'err-agree'));
+  ['in-login-id','in-password'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      document.getElementById('signin-error').style.display = 'none';
+      clearFieldError('f-login-id', null);
+      clearFieldError('f-password', null);
+    });
+  });
+  document.getElementById('in-forgot-id').addEventListener('input', () => clearFieldError('f-forgot-id','err-forgot-id'));
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // ---------- Sign up submit ----------
+  document.getElementById('form-signup').addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = document.getElementById('in-fullname').value.trim();
+    const email = document.getElementById('in-email').value.trim();
+    const phoneDigits = document.getElementById('in-phone').value.replace(/\D/g,'');
+    const doj = document.getElementById('in-doj').value;
+    const agree = document.getElementById('in-agree').checked;
+
+    clearErrors([
+      ['f-fullname','err-fullname'], ['f-email','err-email'],
+      ['f-phone','err-phone'], ['f-doj','err-doj'], [null,'err-agree']
+    ]);
+
+    let firstInvalid = null;
+    const flag = (fieldId, errId, msg) => { setFieldError(fieldId, errId, msg); if(!firstInvalid) firstInvalid = fieldId || errId; };
+
+    if(name.length < 2 || !/[a-zA-Z]/.test(name)) flag('f-fullname','err-fullname','Please enter the employee\'s full name.');
+    if(!email) flag('f-email','err-email','Email address is required.');
+    else if(!EMAIL_RE.test(email)) flag('f-email','err-email','Please enter a valid email address.');
+    else if(emailInUse(email)) flag('f-email','err-email','An account with this email already exists.');
+    if(phoneDigits.length < 7 || phoneDigits.length > 15) flag('f-phone','err-phone','Enter a valid phone number.');
+    if(!doj) flag('f-doj','err-doj','Date of joining is required.');
+    else if(doj > new Date().toISOString().slice(0,10)) flag('f-doj','err-doj','Date of joining can\'t be in the future.');
+    if(!agree){ setFieldError(null,'err-agree','You must accept the Terms of Service and Privacy Policy.'); if(!firstInvalid) firstInvalid = 'in-agree'; }
+
+    if(firstInvalid){
+      const el = document.getElementById(firstInvalid) || document.getElementById('in-fullname');
+      el.scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+
+    const btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    document.getElementById('signup-btn-label').innerHTML = '<span class="spinner"></span> Creating account...';
+
+    setTimeout(() => {
+      const { id, year, serial } = generateLoginId(name, doj);
+      commitSerial(year, serial);
+      const tempPassword = generatePassword();
+
+      accounts.push({
+        loginId: id,
+        email,
+        phone: phoneDigits,
+        fullName: name,
+        password: tempPassword,
+        firstLogin: true
+      });
+
+      btn.disabled = false;
+      document.getElementById('signup-btn-label').textContent = 'Create Employee Account';
+
+      document.getElementById('out-login-id').textContent = id;
+      document.getElementById('out-temp-pw').textContent = tempPassword;
+      showCard('card-signup-success');
+    }, 700);
+  });
+
+  function resetSignupForm(){
+    document.getElementById('form-signup').reset();
+    document.getElementById('in-company').value = 'Odoo India';
+    document.getElementById('logo-label').textContent = 'Upload logo';
+    clearErrors([
+      ['f-fullname','err-fullname'], ['f-email','err-email'],
+      ['f-phone','err-phone'], ['f-doj','err-doj'], [null,'err-agree']
+    ]);
+    updateIdPreview();
+  }
+
+  // ---------- Sign in submit ----------
+  document.getElementById('form-signin').addEventListener('submit', function(e){
+    e.preventDefault();
+    const loginId = document.getElementById('in-login-id').value.trim();
+    const password = document.getElementById('in-password').value;
+    const btn = document.getElementById('btn-signin');
+    const errBox = document.getElementById('signin-error');
+    const fLogin = document.getElementById('f-login-id');
+    const fPw = document.getElementById('f-password');
+
+    errBox.style.display = 'none';
+    fLogin.classList.remove('error'); fPw.classList.remove('error');
+
+    if(!loginId || !password){
+      if(!loginId) fLogin.classList.add('error');
+      if(!password) fPw.classList.add('error');
+      errBox.textContent = 'Please enter both your login ID/email and password.';
+      errBox.style.display = 'flex';
+      return;
+    }
+
+    btn.disabled = true;
+    document.getElementById('signin-btn-label').innerHTML = '<span class="spinner"></span> Signing in...';
+
+    setTimeout(() => {
+      const account = findAccount(loginId);
+      const match = account && account.password === password;
+      btn.disabled = false;
+      document.getElementById('signin-btn-label').textContent = 'Sign In';
+
+      if(match){
+        currentAccount = account;
+        document.getElementById('form-signin').reset();
+        if(account.firstLogin){
+          document.getElementById('form-change-pw').reset();
+          ['rule-len','rule-upper','rule-lower','rule-num','rule-special'].forEach(id => document.getElementById(id).classList.remove('met'));
+          document.getElementById('pw-match-error').style.display = 'none';
+          showApp('card-change-pw');
+        } else {
+          showApp('card-dashboard', account.fullName.split(' ')[0]);
+        }
+      } else {
+        fLogin.classList.add('error'); fPw.classList.add('error');
+        errBox.textContent = 'Invalid login ID or password. Please try again.';
+        errBox.style.display = 'flex';
+      }
+    }, 900);
+  });
+
+  // ---------- Forgot password ----------
+  document.getElementById('form-forgot').addEventListener('submit', function(e){
+    e.preventDefault();
+    const val = document.getElementById('in-forgot-id').value.trim();
+    clearFieldError('f-forgot-id','err-forgot-id');
+    if(!val){
+      setFieldError('f-forgot-id','err-forgot-id','Please enter your login ID or email.');
+      return;
+    }
+    const account = findAccount(val);
+    if(!account){
+      setFieldError('f-forgot-id','err-forgot-id','No account found with that login ID or email.');
+      return;
+    }
+    const btn = document.getElementById('btn-forgot');
+    document.getElementById('forgot-btn-label').innerHTML = '<span class="spinner"></span> Sending...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+      document.getElementById('forgot-btn-label').textContent = 'Send Reset Link';
+      document.getElementById('sent-to-email').textContent = account.email;
+      document.getElementById('form-forgot').reset();
+      showCard('card-forgot-sent');
+    }, 900);
+  });
+
+  // ---------- Change password (first login) rules ----------
+  function checkPwRules(){
+    const pw = document.getElementById('in-new-pw').value;
+    setRule('rule-len', pw.length >= 8);
+    setRule('rule-upper', /[A-Z]/.test(pw));
+    setRule('rule-lower', /[a-z]/.test(pw));
+    setRule('rule-num', /[0-9]/.test(pw));
+    setRule('rule-special', /[^A-Za-z0-9]/.test(pw));
+  }
+  function setRule(id, met){
+    document.getElementById(id).classList.toggle('met', met);
+  }
+  document.getElementById('in-confirm-pw').addEventListener('input', () => {
+    document.getElementById('pw-match-error').style.display = 'none';
+    document.getElementById('f-confirm-pw').classList.remove('error');
+  });
+  document.getElementById('form-change-pw').addEventListener('submit', function(e){
+    e.preventDefault();
+    const pw = document.getElementById('in-new-pw').value;
+    const cpw = document.getElementById('in-confirm-pw').value;
+    const rulesOk = pw.length>=8 && /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+    const matchErr = document.getElementById('pw-match-error');
+    const confirmField = document.getElementById('f-confirm-pw');
+    if(pw !== cpw){
+      matchErr.style.display='flex';
+      confirmField.classList.add('error');
+      return;
+    }
+    matchErr.style.display='none';
+    confirmField.classList.remove('error');
+    if(!rulesOk){ return; }
+
+    if(currentAccount){
+      currentAccount.password = pw;
+      currentAccount.firstLogin = false;
+    }
+    const btn = document.getElementById('btn-change-pw');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Updating...';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Update Password & Continue';
+      const name = currentAccount ? currentAccount.fullName.split(' ')[0] : 'there';
+      showApp('card-dashboard', name);
+    }, 600);
+  });
+</script>
+</body>
+</html>
